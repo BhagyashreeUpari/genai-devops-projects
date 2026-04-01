@@ -1,3 +1,25 @@
+"""
+SRE Prompt Template Library
+============================
+Central library of all AI prompt templates for SRE tooling.
+Import this in any tool to get access to all templates.
+
+Available templates:
+- k8s_log        : Kubernetes log analysis
+- alert_triage   : Prometheus/Dynatrace/Splunk alert triage
+- terraform_review: Terraform plan risk review
+- splunk_log     : Splunk log analysis
+- cicd_failure   : CI/CD pipeline failure analysis
+
+Usage:
+    from prompt_templates import PromptLibrary
+    library = PromptLibrary()
+    prompt = library.get("k8s_log", log_content=my_log)
+
+Part of: GenAI for DevOps & SRE — Phase 1
+Author: Bhagyashree
+"""
+
 import json
 from google import genai
 from google.genai import types

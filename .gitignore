@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 .DS_Store
 experiment_log.json
+requirements_backup.txt

@@ -1,3 +1,16 @@
+"""
+Kubernetes Log Analyzer
+=======================
+Analyzes raw Kubernetes pod logs using Gemini AI.
+Returns structured JSON diagnosis with error type,
+root cause, immediate action, fix, and severity.
+
+Tools used: Gemini API, Python
+Part of: GenAI for DevOps & SRE — Phase 1
+Author: Bhagyashree
+Day: 3
+"""
+
 from google import genai
 from google.genai import types
 import os
@@ -105,6 +118,7 @@ Analyze the Kubernetes log below and return ONLY a valid JSON object.
 Here are two examples of correct output format:
 
 Example 1:
+
 Log: "OOMKilled: container exceeded memory limit, restarts: 5"
 Output: {{
   "error_type": "OOMKilled",
