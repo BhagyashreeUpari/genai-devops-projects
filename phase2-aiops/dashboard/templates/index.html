@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOps Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background-color: #0d1117; color: #e6edf3; }
+        .card { background-color: #161b22; border: 1px solid #30363d; }
+        .card-header { background-color: #1f2937; border-bottom: 1px solid #30363d; }
+        textarea { background-color: #0d1117; color: #e6edf3; border: 1px solid #30363d; }
+        textarea:focus { background-color: #0d1117; color: #e6edf3; border-color: #2E75B6; box-shadow: none; }
+        .btn-primary { background-color: #2E75B6; border-color: #2E75B6; }
+        .result-box { background-color: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 16px; font-family: monospace; white-space: pre-wrap; min-height: 120px; }
+        .severity-p1 { color: #ff6b6b; font-weight: bold; }
+        .severity-p2 { color: #ffd93d; font-weight: bold; }
+        .severity-p3 { color: #6bcb77; font-weight: bold; }
+        .navbar { background-color: #161b22; border-bottom: 1px solid #30363d; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand fw-bold">
+                🤖 AIOps Dashboard
+            </span>
+            <span class="text-muted small">
+                Powered by Groq + LLaMA 3.3 | Bhagyashree | JPMC
+            </span>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Tool Cards Row 1 -->
+        <div class="row g-4 mb-4">
+
+            <!-- Alert Analyzer -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">🚨 Alert Analyzer</h5>
+                        <small class="text-muted">Prometheus / Dynatrace alerts</small>
+                    </div>
+                    <div class="card-body">
+                        <textarea id="alertInput" class="form-control mb-3" rows="6"
+                            placeholder="Paste your alert here...
+Example:
+alertname: HighCPUUsage
+severity: critical
+service: payment-api
+description: CPU above 90% for 5 minutes"></textarea>
+                        <button class="btn btn-primary w-100" onclick="analyzeAlert()">
+                            Analyze Alert
+                        </button>
+                        <div id="alertResult" class="result-box mt-3 d-none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Log Analyzer -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">📋 Log Analyzer</h5>
+                        <small class="text-muted">Kubernetes / Splunk / CloudWatch</small>
+                    </div>
+                    <div class="card-body">
+                        <select id="logType" class="form-select mb-2" style="background-color:#0d1117;color:#e6edf3;border-color:#30363d;">
+                            <option value="kubernetes">Kubernetes</option>
+                            <option value="splunk">Splunk</option>
+                            <option value="cloudwatch">CloudWatch</option>
+                        </select>
+                        <textarea id="logInput" class="form-control mb-3" rows="5"
+                            placeholder="Paste your logs here..."></textarea>
+                        <button class="btn btn-primary w-100" onclick="analyzeLog()">
+                            Analyze Logs
+                        </button>
+                        <div id="logResult" class="result-box mt-3 d-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tool Cards Row 2 -->
+        <div class="row g-4 mb-4">
+
+            <!-- Terraform Reviewer -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">🏗️ Terraform Reviewer</h5>
+                        <small class="text-muted">Risk analysis for infrastructure changes</small>
+                    </div>
+                    <div class="card-body">
+                        <textarea id="terraformInput" class="form-control mb-3" rows="6"
+                            placeholder="Paste terraform plan output here...
+Example:
+# aws_security_group.web will be updated
+~ ingress {
+  ~ cidr_blocks = ['10.0.0.0/8'] -> ['0.0.0.0/0']
+}
+Plan: 0 to add, 1 to change, 0 to destroy."></textarea>
+                        <button class="btn btn-primary w-100" onclick="reviewTerraform()">
+                            Review Plan
+                        </button>
+                        <div id="terraformResult" class="result-box mt-3 d-none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CI/CD Analyzer -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">⚙️ CI/CD Failure Analyzer</h5>
+                        <small class="text-muted">Jules Pipeline / Jenkins</small>
+                    </div>
+                    <div class="card-body">
+                        <select id="cicdTool" class="form-select mb-2" style="background-color:#0d1117;color:#e6edf3;border-color:#30363d;">
+                            <option value="Jules Pipeline">Jules Pipeline</option>
+                            <option value="Jenkins">Jenkins</option>
+                            <option value="GitHub Actions">GitHub Actions</option>
+                        </select>
+                        <textarea id="cicdInput" class="form-control mb-3" rows="5"
+                            placeholder="Paste your pipeline failure log here..."></textarea>
+                        <button class="btn btn-primary w-100" onclick="analyzeCICD()">
+                            Analyze Failure
+                        </button>
+                        <div id="cicdResult" class="result-box mt-3 d-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-center text-muted small mb-4">
+            GenAI for DevOps & SRE | Phase 2 Complete | 
+            Built by Bhagyashree | JPMC Bangalore
+        </p>
+    </div>
+
+    <script>
+        // ── Shared function to format JSON result ──
+        function formatResult(data, elementId) {
+            const el = document.getElementById(elementId);
+            el.classList.remove('d-none');
+
+            if (data.error) {
+                el.innerHTML = `<span style="color:#ff6b6b">Error: ${data.error}</span>`;
+                return;
+            }
+
+            // Colour code severity
+            let html = JSON.stringify(data, null, 2);
+            html = html.replace(/"P1"/g, '<span class="severity-p1">"P1"</span>');
+            html = html.replace(/"P2"/g, '<span class="severity-p2">"P2"</span>');
+            html = html.replace(/"P3"/g, '<span class="severity-p3">"P3"</span>');
+            html = html.replace(/"Critical"/g, '<span class="severity-p1">"Critical"</span>');
+            html = html.replace(/"Block"/g, '<span class="severity-p1">"Block"</span>');
+            html = html.replace(/"Approve"/g, '<span class="severity-p3">"Approve"</span>');
+            el.innerHTML = html;
+        }
+
+        // ── Alert Analyzer ──
+        async function analyzeAlert() {
+            const text = document.getElementById('alertInput').value;
+            if (!text.trim()) return alert('Please paste an alert first');
+
+            const el = document.getElementById('alertResult');
+            el.classList.remove('d-none');
+            el.innerHTML = 'Analyzing...';
+
+            const res = await fetch('/analyze-alert', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({alert_text: text})
+            });
+            const data = await res.json();
+            formatResult(data, 'alertResult');
+        }
+
+        // ── Log Analyzer ──
+        async function analyzeLog() {
+            const text = document.getElementById('logInput').value;
+            const logType = document.getElementById('logType').value;
+            if (!text.trim()) return alert('Please paste logs first');
+
+            const el = document.getElementById('logResult');
+            el.classList.remove('d-none');
+            el.innerHTML = 'Analyzing...';
+
+            const res = await fetch('/analyze-log', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({log_text: text, log_type: logType})
+            });
+            const data = await res.json();
+            formatResult(data, 'logResult');
+        }
+
+        // ── Terraform Reviewer ──
+        async function reviewTerraform() {
+            const text = document.getElementById('terraformInput').value;
+            if (!text.trim()) return alert('Please paste terraform plan first');
+
+            const el = document.getElementById('terraformResult');
+            el.classList.remove('d-none');
+            el.innerHTML = 'Reviewing...';
+
+            const res = await fetch('/review-terraform', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({plan_text: text})
+            });
+            const data = await res.json();
+            formatResult(data, 'terraformResult');
+        }
+
+        // ── CI/CD Analyzer ──
+        async function analyzeCICD() {
+            const text = document.getElementById('cicdInput').value;
+            const tool = document.getElementById('cicdTool').value;
+            if (!text.trim()) return alert('Please paste failure log first');
+
+            const el = document.getElementById('cicdResult');
+            el.classList.remove('d-none');
+            el.innerHTML = 'Analyzing...';
+
+            const res = await fetch('/analyze-cicd', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({error_log: text, tool: tool})
+            });
+            const data = await res.json();
+            formatResult(data, 'cicdResult');
+        }
+    </script>
+</body>
+</html>
