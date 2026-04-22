@@ -1,0 +1,94 @@
+# deployment.yaml
+# Tells Kubernetes: run 2 copies of payment-service
+# Automatically restarts crashed pods
+# Handles rolling updates with zero downtime
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: default
+  labels:
+    app: payment-service
+    version: v1
+    team: payments
+
+spec:
+  # Run 2 copies for high availability
+  replicas: 2
+
+  # Selector must match pod labels below
+  selector:
+    matchLabels:
+      app: payment-service
+
+  # Rolling update strategy
+  # Kubernetes updates one pod at a time
+  # Never takes all pods down simultaneously
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # add 1 extra pod during update
+      maxUnavailable: 0  # never reduce below 2 pods
+
+  # Pod template — blueprint for each pod
+  template:
+    metadata:
+      labels:
+        app: payment-service
+        version: v1
+
+    spec:
+      containers:
+      - name: payment-service
+        image: payment-service:v1
+
+        # IMPORTANT: Never pull from registry
+        # Use local image we built with minikube docker-env
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8000
+          name: http
+
+        # Environment variables
+        # GROQ_API_KEY from a Kubernetes Secret (Day 19)
+        # For now using direct value for testing
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: payment-secrets
+              key: groq-api-key
+              optional: true
+
+        # Resource limits
+        # Prevents one pod from consuming all node resources
+        resources:
+          requests:
+            memory: "128Mi"  # minimum memory guaranteed
+            cpu: "100m"      # 100 millicores = 0.1 CPU
+          limits:
+            memory: "256Mi"  # maximum memory allowed
+            cpu: "500m"      # maximum 0.5 CPU
+
+        # Liveness probe
+        # If this fails — Kubernetes RESTARTS the pod
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          failureThreshold: 3
+
+        # Readiness probe
+        # If this fails — pod removed from load balancer
+        # Traffic stops going to this pod
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
