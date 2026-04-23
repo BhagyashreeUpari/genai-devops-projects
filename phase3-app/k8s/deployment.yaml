@@ -7,7 +7,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: payment-service
-  namespace: default
+  namespace: production
   labels:
     app: payment-service
     version: v1
@@ -54,13 +54,38 @@ spec:
         # Environment variables
         # GROQ_API_KEY from a Kubernetes Secret (Day 19)
         # For now using direct value for testing
+
         env:
+        # From ConfigMap — non-sensitive config
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: APP_ENV
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: LOG_LEVEL
+        - name: MAX_PAYMENT_AMOUNT
+          valueFrom:
+            configMapKeyRef:
+              name: payment-service-config
+              key: MAX_PAYMENT_AMOUNT
+
+        # From Secret — sensitive config
         - name: GROQ_API_KEY
           valueFrom:
             secretKeyRef:
               name: payment-secrets
               key: groq-api-key
-              optional: true
+
+        # Inject ALL ConfigMap keys at once as env vars
+        # Alternative to listing each key individually
+        envFrom:
+        - configMapRef:
+            name: payment-service-config
+
 
         # Resource limits
         # Prevents one pod from consuming all node resources
